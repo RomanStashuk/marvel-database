@@ -1,0 +1,30 @@
+//
+// My variables
+//
+$font-family--roboto: 'Roboto', system-ui, -apple-system, 'Segoe UI',
+  'Helvetica Neue', 'Noto Sans', 'Liberation Sans', Arial, sans-serif,
+  'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+$font-family--roboto-condensed: 'Roboto Condensed', system-ui, -apple-system,
+  'Segoe UI', 'Helvetica Neue', 'Noto Sans', 'Liberation Sans', Arial,
+  sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+  'Noto Color Emoji';
+
+//
+// Bootstrap variables
+//
+$enable-shadows: true;
+$enable-rounded: false;
+
+// Typography
+$font-family-sans-serif: $font-family--roboto;
+
+// Colors
+// $body-bg: green;
+$primary: #ec1d24;
+$danger: #fd7e14;
+
+@import '~bootstrap/scss/bootstrap';
+
+.ff-secondary {
+  font-family: $font-family--roboto-condensed;
+}
