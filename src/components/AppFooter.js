@@ -2,7 +2,7 @@ import Container from 'react-bootstrap/Container';
 
 const AppFooter = () => {
   return (
-    <footer bg-dark fluid className="text-bg-dark">
+    <footer bg-dark="true" fluid="true" className="text-bg-dark">
       <Container className="p-3 text-center">
         <p className="m-0">
           Data provided by{' '}
