@@ -2,7 +2,7 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 
 import AppHeader from './AppHeader';
-import RandomChar from './RandomChar';
+import RandomChar from './RandomChar/RandomChar';
 import CharList from './CharList';
 import CharInfo from './CharInfo';
 import AppFooter from './AppFooter';
