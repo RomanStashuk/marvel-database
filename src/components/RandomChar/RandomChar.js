@@ -27,6 +27,10 @@ class RandomChar extends Component {
     this.updateChar();
   }
 
+  onCharLoading = () => {
+    this.setState({ loading: true });
+  };
+
   onCharLoaded = (char) => {
     this.setState({ char, loading: false });
   };
@@ -37,6 +41,8 @@ class RandomChar extends Component {
 
   updateChar = () => {
     const id = Math.floor(Math.random() * (1011400 - 1011000) + 1011000);
+
+    this.onCharLoading();
     this.marvelService
       .getCharacterById(id)
       .then(this.onCharLoaded)
@@ -68,7 +74,10 @@ class RandomChar extends Component {
             <br />
             <span className="d-block mt-4">Or choose another one</span>
           </p>
-          <Button className="align-self-start mt-auto link-light ff-secondary fw-bold text-uppercase">
+          <Button
+            className="align-self-start mt-auto link-light ff-secondary fw-bold text-uppercase"
+            onClick={this.updateChar}
+          >
             Try it
           </Button>
           <Image
@@ -98,7 +107,7 @@ const View = ({ char }) => {
       </div>
       <div className="d-flex flex-column">
         <h3 className="ff-secondary fw-bold text-uppercase ">{name}</h3>
-        <p className="mb-sm-auto mb-md-2 mb-lg-auto">{description}</p>
+        <p className="mb-2 mb-sm-auto mb-md-2 mb-lg-auto">{description}</p>
         <Stack
           className="ff-secondary fw-bold text-uppercase"
           direction="horizontal"
