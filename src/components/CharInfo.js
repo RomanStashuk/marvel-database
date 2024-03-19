@@ -1,76 +1,133 @@
+import { Component } from 'react';
+
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
-
 import Button from 'react-bootstrap/Button';
 
-import thor from '../img/thor.jpeg';
+import Spinner from './Spinner';
+import ErrorMessage from './ErrorMessage';
+import Skeleton from './Skeleton/Skeleton';
+import MarvelService from '../services/MarvelService';
 
-const CharInfo = () => {
+class CharInfo extends Component {
+  state = {
+    char: null,
+    loading: false,
+    error: false,
+  };
+
+  marvelService = new MarvelService();
+
+  componentDidMount() {
+    this.updateChar();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.charId !== prevProps.charId) {
+      this.updateChar();
+    }
+  }
+
+  updateChar = () => {
+    const { charId } = this.props;
+
+    if (!charId) return;
+
+    this.onCharLoading();
+    this.marvelService
+      .getCharacterById(charId)
+      .then(this.onCharLoaded)
+      .catch(this.onError);
+  };
+
+  onCharLoading = () => {
+    this.setState({ loading: true });
+  };
+
+  onCharLoaded = (char) => {
+    this.setState({ char, loading: false });
+  };
+
+  onError = () => {
+    this.setState({ loading: false, error: true });
+  };
+
+  render() {
+    const { char, loading, error } = this.state;
+
+    const skeleton = char || loading || error ? null : <Skeleton />;
+    const errorMessage = error ? <ErrorMessage className={'w-100'} /> : null;
+    const spinner = loading ? <Spinner /> : null;
+    const content = !loading && !error && char ? <View char={char} /> : null;
+
+    return (
+      <Col as="section" sm={12} md={5} className="p-4 p-md-3 p-lg-4 shadow">
+        <h2 className="visually-hidden">Information about chosen character</h2>
+        {skeleton}
+        {errorMessage}
+        {spinner}
+        {content}
+      </Col>
+    );
+  }
+}
+
+const View = ({ char }) => {
+  const { name, description, thumbnail, homepage, wiki, comics } = char;
+  const thumbnailClassName = `d-block mx-auto ms-lg-0 object-fit-${
+    thumbnail.includes('image_not_available') ? 'contains' : 'cover'
+  }`;
   return (
-    <Col as="section" sm={12} md={5} className="p-4 p-md-3 p-lg-4 shadow">
-      <h2 className="visually-hidden">Information about chosen character</h2>
-
+    <>
       <Row className="mb-2 mb-sm-3 mb-md-2 mb-lg-3">
-        <Col xs sm={7} md={12} lg="auto">
+        <Col sm={7} md={12} lg={5}>
           <img
-            src={thor}
+            src={thumbnail}
             width={150}
             height={150}
-            className="d-block mx-auto ms-lg-0"
-            alt="abyss"
+            className={thumbnailClassName}
+            alt={name}
           />
         </Col>
-        <Col xs sm={5} md={12} lg="auto" className="d-flex flex-column ">
+        <Col
+          sm={5}
+          md={12}
+          lg={7}
+          className="d-flex flex-column ps-lg-4 ps-xl-0"
+        >
           <h3 className="align-self-center align-self-lg-start my-2 mt-lg-0 ff-secondary fw-bold text-uppercase">
-            Thor
+            {name}
           </h3>
           <div className="d-flex flex-column mt-auto ff-secondary text-uppercase">
             <Button
-              href="#"
+              href={homepage}
               className="mb-2 fw-bold link-light"
               variant="primary"
             >
               Homepage
             </Button>
-            <Button href="#" className="fw-bold " variant="secondary">
+            <Button href={wiki} className="fw-bold " variant="secondary">
               Wiki
             </Button>
           </div>
         </Col>
       </Row>
 
-      <p>
-        In Norse mythology, Loki is a god or jötunn (or both). Loki is the son
-        of Fárbauti and Laufey, and the brother of Helblindi and Býleistr. By
-        the jötunn Angrboða, Loki is the father of Hel, the wolf Fenrir, and the
-        world serpent Jörmungandr. By Sigyn, Loki is the father of Nari and/or
-        Narfi and with the stallion Svaðilfari as the father, Loki gave birth—in
-        the form of a mare—to the eight-legged horse Sleipnir. In addition, Loki
-        is referred to as the father of Váli in the Prose Edda.
-      </p>
+      <p>{description}</p>
 
       <h4 className="ff-secondary fw-bold">Comics:</h4>
       <ul className="list-group">
-        <li className="list-group-item">
-          All-Winners Squad: Band of Heroes (2011) #3
-        </li>
-        <li className="list-group-item">Alpha Flight (1983) #50</li>
-        <li className="list-group-item">Amazing Spider-Man (1999) #503</li>
-        <li className="list-group-item">Amazing Spider-Man (1999) #504</li>
-        <li className="list-group-item">
-          AMAZING SPIDER-MAN VOL. 7: BOOK OF EZEKIEL TPB (Trade Paperback)
-        </li>
-        <li className="list-group-item">
-          Amazing-Spider-Man: Worldwide Vol. 8 (Trade Paperback)
-        </li>
-        <li className="list-group-item">
-          Asgardians Of The Galaxy Vol. 2: War Of The Realms (Trade Paperback)
-        </li>
-        <li className="list-group-item">Vengeance (2011) #4</li>
-        <li className="list-group-item">Avengers (1963) #1</li>
-        <li className="list-group-item">Avengers (1996) #1</li>
+        {comics.length ? null : 'There is no comics with this characher'}
+        {comics.map((item, i) => {
+          if (i > 10) return null;
+          return (
+            <li key={i} className="list-group-item">
+              {item.name}
+            </li>
+          );
+        })}
       </ul>
-    </Col>
+    </>
   );
 };
 
