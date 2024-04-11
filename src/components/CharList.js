@@ -12,20 +12,44 @@ class CharList extends Component {
   state = {
     charList: [],
     loading: true,
+    newItemLoading: false,
     error: false,
+    offset: 1530,
+    charEnded: false,
   };
 
   marvelService = new MarvelService();
 
   componentDidMount() {
-    this.marvelService
-      .getAllCharacters()
-      .then(this.onCharListLoaded)
-      .catch(this.onError);
+    this.onRequest();
   }
 
-  onCharListLoaded = (charList) => {
-    this.setState({ charList, loading: false });
+  onRequest = (offset) => {
+    this.onCharListLoading();
+    this.marvelService
+      .getAllCharacters(offset)
+      .then(this.onCharListLoaded)
+      .catch(this.onError);
+  };
+
+  onCharListLoading = () => {
+    this.setState({ newItemLoading: true });
+  };
+
+  onCharListLoaded = (newCharList) => {
+    let ended = false;
+
+    if (newCharList.length < 9) {
+      ended = true;
+    }
+
+    this.setState(({ charList, offset }) => ({
+      charList: [...charList, ...newCharList],
+      loading: false,
+      newItemLoading: false,
+      offset: offset + 9,
+      charEnded: ended,
+    }));
   };
 
   onError = () => {
@@ -33,7 +57,8 @@ class CharList extends Component {
   };
 
   render() {
-    const { charList, loading, error } = this.state;
+    const { charList, loading, error, offset, newItemLoading, charEnded } =
+      this.state;
 
     const errorMessage = error ? (
       <ErrorMessage className={'w-100 mb-3'} />
@@ -44,6 +69,10 @@ class CharList extends Component {
         <View charArr={charList} onCharSelected={this.props.onCharSelected} />
       ) : null;
 
+    const buttonClassName = `d-block mx-auto ff-secondary fw-bold text-uppercase text-white ${
+      charEnded ? 'invisible' : 'visible'
+    }`;
+
     return (
       <Col as="section" xs={12} md={7} className="mb-4 mb-md-0 p-0">
         <h2 className="visually-hidden">List of Marvel Comic Characters</h2>
@@ -51,7 +80,12 @@ class CharList extends Component {
           {errorMessage}
           {spinner}
           {content}
-          <Button className="d-block mx-auto ff-secondary fw-bold text-uppercase text-white">
+          <Button
+            className={buttonClassName}
+            disabled={newItemLoading}
+            hidden={charEnded}
+            onClick={() => this.onRequest(offset)}
+          >
             Load more
           </Button>
         </div>
