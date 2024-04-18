@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState } from 'react';
 
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -10,40 +10,32 @@ import CharInfo from './CharInfo';
 import AppFooter from './AppFooter';
 import ErrorBoundary from './ErrorBoundary';
 
-class App extends Component {
-  state = {
-    selectedChar: null,
+const App = () => {
+  const [selectedChar, setSelectedChar] = useState(null);
+
+  const onCharSelected = (id) => {
+    setSelectedChar(id);
   };
 
-  onCharSelected = (id) => {
-    this.setState({
-      selectedChar: id,
-    });
-  };
-
-  render() {
-    const { selectedChar } = this.state;
-
-    return (
-      <div className="app">
-        <AppHeader className="mb-4" />
-        <Container as="main" className="px-4">
+  return (
+    <div className="app">
+      <AppHeader className="mb-4" />
+      <Container as="main" className="px-4">
+        <ErrorBoundary>
+          <RandomChar className="mb-4" />
+        </ErrorBoundary>
+        <Row className="d-flex justify-content-between mb-4 mb-lg-5">
           <ErrorBoundary>
-            <RandomChar className="mb-4" />
+            <CharList onCharSelected={onCharSelected} />
           </ErrorBoundary>
-          <Row className="d-flex justify-content-between mb-4 mb-lg-5">
-            <ErrorBoundary>
-              <CharList onCharSelected={this.onCharSelected} />
-            </ErrorBoundary>
-            <ErrorBoundary>
-              <CharInfo charId={selectedChar} />
-            </ErrorBoundary>
-          </Row>
-        </Container>
-        <AppFooter />
-      </div>
-    );
-  }
-}
+          <ErrorBoundary>
+            <CharInfo charId={selectedChar} />
+          </ErrorBoundary>
+        </Row>
+      </Container>
+      <AppFooter />
+    </div>
+  );
+};
 
 export default App;
