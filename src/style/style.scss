@@ -28,3 +28,7 @@ $danger: #fd7e14;
 .ff-secondary {
   font-family: $font-family--roboto-condensed;
 }
+
+.char__item_selected {
+  border: 1px solid $primary;
+}
