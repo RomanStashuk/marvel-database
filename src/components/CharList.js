@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
@@ -8,98 +8,109 @@ import Image from 'react-bootstrap/Image';
 import Spinner from './Spinner';
 import ErrorMessage from './ErrorMessage';
 import MarvelService from '../services/MarvelService';
-class CharList extends Component {
-  state = {
-    charList: [],
-    loading: true,
-    newItemLoading: false,
-    error: false,
-    offset: 210,
-    charEnded: false,
+
+const CharList = (props) => {
+  const [charList, setCharList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [newItemLoading, setNewItemLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [offset, setOffset] = useState(210);
+  const [charEnded, setCharEnded] = useState(false);
+
+  const marvelService = new MarvelService();
+
+  useEffect(() => {
+    onRequest();
+  }, []);
+
+  const onError = () => {
+    setLoading(false);
+    setError(true);
   };
 
-  marvelService = new MarvelService();
-
-  componentDidMount() {
-    this.onRequest();
-  }
-
-  onRequest = (offset) => {
-    this.onCharListLoading();
-    this.marvelService
-      .getAllCharacters(offset)
-      .then(this.onCharListLoaded)
-      .catch(this.onError);
+  const onCharListLoading = () => {
+    setNewItemLoading(true);
   };
 
-  onCharListLoading = () => {
-    this.setState({ newItemLoading: true });
-  };
-
-  onCharListLoaded = (newCharList) => {
+  const onCharListLoaded = (newCharList) => {
     let ended = false;
 
     if (newCharList.length < 9) {
       ended = true;
     }
 
-    this.setState(({ charList, offset }) => ({
-      charList: [...charList, ...newCharList],
-      loading: false,
-      newItemLoading: false,
-      offset: offset + 9,
-      charEnded: ended,
-    }));
+    setCharList((charList) => [...charList, ...newCharList]);
+    setLoading(false);
+    setNewItemLoading(false);
+    setOffset((offset) => offset + 9);
+    setCharEnded(ended);
   };
 
-  onError = () => {
-    this.setState({ loading: false, error: true });
+  const onRequest = (offset) => {
+    onCharListLoading();
+    marvelService
+      .getAllCharacters(offset)
+      .then(onCharListLoaded)
+      .catch(onError);
   };
 
-  render() {
-    const { charList, loading, error, offset, newItemLoading, charEnded } =
-      this.state;
-
-    const errorMessage = error ? (
-      <ErrorMessage className={'w-100 mb-3'} />
+  const errorMessage = error ? <ErrorMessage className={'w-100 mb-3'} /> : null;
+  const spinner = loading ? <Spinner /> : null;
+  const content =
+    !loading && !error ? (
+      <View charArr={charList} onCharSelected={props.onCharSelected} />
     ) : null;
-    const spinner = loading ? <Spinner /> : null;
-    const content =
-      !loading && !error ? (
-        <View charArr={charList} onCharSelected={this.props.onCharSelected} />
-      ) : null;
 
-    const buttonClassName = `d-block mx-auto ff-secondary fw-bold text-uppercase text-white ${
-      charEnded ? 'invisible' : 'visible'
-    }`;
+  const buttonClassName = `d-block mx-auto ff-secondary fw-bold text-uppercase text-white ${
+    charEnded ? 'invisible' : 'visible'
+  }`;
 
-    return (
-      <Col as="section" xs={12} md={7} className="mb-4 mb-md-0 p-0">
-        <h2 className="visually-hidden">List of Marvel Comic Characters</h2>
-        <div className="me-md-3 me-lg-4">
-          {errorMessage}
-          {spinner}
-          {content}
-          <Button
-            className={buttonClassName}
-            disabled={newItemLoading}
-            hidden={charEnded}
-            onClick={() => this.onRequest(offset)}
-          >
-            Load more
-          </Button>
-        </div>
-      </Col>
-    );
-  }
-}
+  return (
+    <Col as="section" xs={12} md={7} className="mb-4 mb-md-0 p-0">
+      <h2 className="visually-hidden">List of Marvel Comic Characters</h2>
+      <div className="me-md-3 me-lg-4">
+        {errorMessage}
+        {spinner}
+        {content}
+        <Button
+          className={buttonClassName}
+          disabled={newItemLoading}
+          hidden={charEnded}
+          onClick={() => onRequest(offset)}
+        >
+          Load more
+        </Button>
+      </div>
+    </Col>
+  );
+};
 
 const View = ({ charArr, onCharSelected }) => {
+  const itemsRefs = useRef([]);
+
+  const focusOnItem = (id) => {
+    itemsRefs.current.forEach((item) =>
+      item.classList.remove('char__item_selected'),
+    );
+    itemsRefs.current[id].classList.add('char__item_selected');
+    itemsRefs.current[id].focus();
+  };
+
   const chars = charArr.map(({ id, name, thumbnail, homepage }) => {
     return (
       <Col
         key={id}
-        onClick={() => onCharSelected(id)}
+        ref={(el) => (itemsRefs.current[id] = el)}
+        onClick={() => {
+          onCharSelected(id);
+          focusOnItem(id);
+        }}
+        onKeyPress={(e) => {
+          if (e.key === ' ' || e.key === 'Enter') {
+            onCharSelected(id);
+            focusOnItem(id);
+          }
+        }}
         as="li"
         xs={6}
         sm={4}
